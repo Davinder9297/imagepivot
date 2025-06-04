@@ -57,7 +57,7 @@ const ConvertVideoPage = () => {
       const formData = new FormData();
       formData.append("video", video);
       formData.append("format", format);
-    const trackRes = await axios.post("http://localhost:5000/api/user/track", {
+    const trackRes = await axios.post("/api/user/track", {
         service: 'convert-video',
         imageCount: 1
       }, {
@@ -68,7 +68,7 @@ const ConvertVideoPage = () => {
       });
       console.log(trackRes);
       
-      const res = await axios.post("http://localhost:5000/api/video/convert-video", formData, {
+      const res = await axios.post("/api/video/convert-video", formData, {
         responseType: "blob",
         headers: {
           "Content-Type": "multipart/form-data",

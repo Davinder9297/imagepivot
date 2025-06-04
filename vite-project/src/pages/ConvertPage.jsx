@@ -71,7 +71,7 @@ const handleConvert = async (e) => {
     const formData = new FormData();
     formData.append("image", image);
     formData.append("format", format);
-    const trackRes = await axios.post("http://localhost:5000/api/user/track", {
+    const trackRes = await axios.post("/api/user/track", {
         service: format === 'jpg' ? 'convert-to-jpg' : 'convert-from-jpg',
         imageCount: 1
       }, {
@@ -83,7 +83,7 @@ const handleConvert = async (e) => {
       console.log(trackRes);
       
     // Call backend conversion API
-    const res = await axios.post("http://localhost:5000/api/convert", formData, {
+    const res = await axios.post("/api/convert", formData, {
       responseType: "blob",
       headers: {
         "Content-Type": "multipart/form-data",

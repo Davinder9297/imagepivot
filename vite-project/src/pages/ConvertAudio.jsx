@@ -57,7 +57,7 @@ const ConvertAudioPage = () => {
       const formData = new FormData();
       formData.append("audio", audio);
       formData.append("format", format);
-    const trackRes = await axios.post("http://localhost:5000/api/user/track", {
+    const trackRes = await axios.post("/api/user/track", {
         service: 'convert-audio',
         imageCount: 1
       }, {
@@ -68,7 +68,7 @@ const ConvertAudioPage = () => {
       });
       console.log(trackRes);
       
-      const res = await axios.post("http://localhost:5000/api/audio/convertaudio", formData, {
+      const res = await axios.post("/api/audio/convertaudio", formData, {
         responseType: "blob",
         headers: {
           "Content-Type": "multipart/form-data",
