@@ -96,7 +96,7 @@ const convertToSVG = async (inputPath, outputPath, originalExt) => {
   // If vector, use Inkscape directly to convert to SVG
   if (vectorExts.includes(ext)) {
     return new Promise((resolve, reject) => {
-      exec(`inkscape "${rasterPath}" --export-plain-svg="${outputPath}" --export-dpi=300`, (error, stdout, stderr) => {
+      exec(`xvfb-run --auto-servernum inkscape "${rasterPath}" --export-plain-svg="${outputPath}" --export-dpi=300`, (error, stdout, stderr) => {
   if (error) {
     return reject(stderr || stdout || error);
   }
@@ -122,7 +122,7 @@ const convertToSVG = async (inputPath, outputPath, originalExt) => {
 
   // Use Inkscape's "Trace Bitmap" feature to generate SVG from raster
   return new Promise((resolve, reject) => {
-    exec(`inkscape "${rasterPath}" --export-plain-svg="${outputPath}"`, (error, stdout, stderr) => {
+    exec(`xvfb-run --auto-servernum inkscape "${rasterPath}" --export-plain-svg="${outputPath}" --export-dpi=300`, (error, stdout, stderr) => {
       if (error) {
         return reject(stderr || stdout || error);
       }
@@ -151,8 +151,7 @@ const convertWithInkscape = (inputPath, outputPath) => {
   return new Promise((resolve, reject) => {
     const ext = path.extname(outputPath).slice(1);
     // This command handles EPS, AI, PDF, SVG conversions via Inkscape
-    const command = `inkscape "${inputPath}" --export-type=${ext} --export-filename="${outputPath}" --export-dpi=300`;
-
+const command = `xvfb-run --auto-servernum inkscape "${inputPath}" --export-type=${ext} --export-filename="${outputPath}" --export-dpi=300`;
     console.log('Running command:', command);
 
     exec(command, (error, stdout, stderr) => {
