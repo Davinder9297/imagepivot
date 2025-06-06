@@ -154,7 +154,7 @@ const ConvertAudioPage = () => {
                           </label>
                           <p className="pl-1">or drag and drop</p>
                         </div>
-                        <p className="text-xs text-gray-500">Supported formats: {validFormats.join(", ").toUpperCase()} - max 20MB</p>
+                        <p className="text-xs text-gray-500">Supported formats: {validFormats.join(", ").toUpperCase()} - max 100MB</p>
                         {selectedFileName && (
                           <p className="mt-2 text-sm text-indigo-600 font-medium">
                             Selected: {selectedFileName}

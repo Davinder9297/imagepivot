@@ -163,7 +163,7 @@ const handleConvert = async (e) => {
                           </label>
                           <p className="pl-1">or drag and drop</p>
                         </div>
-                        <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 10MB</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 100MB</p>
                         {selectedFileName && (
                           <p className="mt-2 text-sm text-indigo-600 font-medium">
                             Selected: {selectedFileName}
