@@ -24,6 +24,22 @@ async function convertWithSharp(inputPath, outputPath, format) {
     return image.toFormat(format).toFile(outputPath);
   }
 }
+const convertCDRToSVG = (inputPath, outputPath) => {
+  return new Promise((resolve, reject) => {
+    const command = `uniconvertor "${inputPath}" "${outputPath}"`;
+    console.log('Running CDR conversion:', command);
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Uniconvertor error:', stderr || stdout || error);
+        return reject(new Error('CDR conversion failed'));
+      }
+      if (!fs.existsSync(outputPath)) {
+        return reject(new Error('Output SVG file not created by uniconvertor'));
+      }
+      resolve();
+    });
+  });
+};
 
 function convertWithGM(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
@@ -71,7 +87,11 @@ const convertToSVG = async (inputPath, outputPath, originalExt) => {
   const rawExts = ['cr2', 'nef', 'arw', 'dng'];
 
   const ext = originalExt.toLowerCase();
-
+  if (ext === 'cdr') {
+    // Use uniconvertor for CDR
+    await convertCDRToSVG(inputPath, outputPath);
+    return;
+  }
   // Convert RAW to JPEG first
   if (rawExts.includes(ext)) {
     const jpegPath = inputPath + '_raw_converted.jpg';
