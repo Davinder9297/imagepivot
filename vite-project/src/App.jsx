@@ -25,6 +25,7 @@ import ConvertAudioPage from "./pages/ConvertAudio";
 import ConvertVideoPage from "./pages/ConvertVideo";
 import PreHome from "./pages/preHome";
 import ToolsFixed from "./components/ToolsFixed";
+import BorderWrapper from "./components/BorderWrapper";
 
 function App() {
   return (
@@ -32,7 +33,6 @@ function App() {
       <Router>
         <div className="page-container bg-gray-100">
           <Navbar />
-          <ToolsFixed/>
           <main className="route-transition">
             <Routes>
               <Route path="/" element={<PreHome />} />
@@ -66,18 +66,18 @@ function App() {
                 </AdminRoute>
               } />
 
-              <Route path="/convert" element={<ConvertPage />} />
-              <Route path="/convertaudio" element={<ConvertAudioPage />} />
-              <Route path="/convertvideo" element={<ConvertVideoPage />} />
-              <Route path="/compress" element={<CompressorPage />} />
-              <Route path="/html-to-image" element={<HtmlToImagePage />} />
-              <Route path="/rotate" element={<RotatePage />} />
-              <Route path="/crop" element={<CropPage />} />
-              <Route path="/watermark" element={<WatermarkPage />} />
+              <Route path="/convert" element={<BorderWrapper><ConvertPage /></BorderWrapper>} />
+              <Route path="/convertaudio" element={<BorderWrapper><ConvertAudioPage /></BorderWrapper>} />
+              <Route path="/convertvideo" element={<BorderWrapper><ConvertVideoPage /></BorderWrapper>} />
+              <Route path="/compress" element={<BorderWrapper><CompressorPage /></BorderWrapper>} />
+              <Route path="/html-to-image" element={<BorderWrapper><HtmlToImagePage /></BorderWrapper>} />
+              <Route path="/rotate" element={<BorderWrapper><RotatePage /></BorderWrapper>} />
+              <Route path="/crop" element={<BorderWrapper><CropPage /></BorderWrapper>} />
+              <Route path="/watermark" element={<BorderWrapper><WatermarkPage /></BorderWrapper>} />
               <Route path="/meme-generator" element={<MemeGeneratorPage />}/>
-              <Route path="/blur-face" element={<BlurFacePage />} /> 
-              <Route path="/upscale" element={<UpscalePage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/blur-face" element={<BorderWrapper><BlurFacePage /></BorderWrapper>} /> 
+              <Route path="/upscale" element={<BorderWrapper><UpscalePage /></BorderWrapper>} />
+              <Route path="/forgot-password" element={<BorderWrapper><ForgotPassword /></BorderWrapper>} />
             </Routes>
           </main>
         </div>
