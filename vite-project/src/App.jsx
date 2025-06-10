@@ -35,8 +35,8 @@ function App() {
           <Navbar />
           <main className="route-transition">
             <Routes>
-              <Route path="/" element={<PreHome />} />
-              <Route path="/image" element={<Home />} />
+              {/* <Route path="/" element={<PreHome />} /> */}
+              <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/signup" element={<Register />} />

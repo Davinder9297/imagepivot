@@ -70,12 +70,7 @@ const Home = () => {
     <div className="min-h-screen bg-gray-100">
       <BorderWrapper>
       <div className="p-6">
-        {/* <h2 className="text-2xl md:text-3xl font-bold text-center text-teal-600 mb-2">
-          Everything you need to edit images — in one place.
-        </h2>
-        <p className="text-center text-black mb-8 text-lg">
-        Easily convert PNG, JPG, or other image files to high-quality PDFs or JPGs with our fast, secure, and free online tool. No downloads needed — just upload, convert, and download in seconds!
-        </p> */}
+ 
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -91,7 +86,12 @@ const Home = () => {
         </div>
       </div>
 </BorderWrapper>
-
+       {/* <h2 className="text-2xl md:text-3xl font-bold text-center text-teal-600 mb-2">
+          Everything you need to edit images — in one place.
+        </h2> */}
+        {/* <p className="text-center text-black mb-8 text-lg">
+        Easily convert PNG, JPG, or other image files to high-quality PDFs or JPGs with our fast, secure, and free online tool. No downloads needed — just upload, convert, and download in seconds!
+        </p> */}
         <HowItWorksSection />
       
             <HeroBanner />

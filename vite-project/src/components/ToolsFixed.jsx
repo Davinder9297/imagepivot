@@ -10,7 +10,7 @@ export default function ToolsFixed() {
   return (
     <div className="flex justify-start w-fit">
       <NavLink
-        to="/image"
+        to="/"
         className={({ isActive }) =>
           `${baseClasses} ${!isActive ? activeClasses : inactiveClasses}`
         }
