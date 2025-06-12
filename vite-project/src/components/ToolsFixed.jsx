@@ -35,6 +35,22 @@ export default function ToolsFixed() {
       >
         Video Conversion
       </NavLink>
+      <NavLink
+        to="/compress-audio"
+        className={({ isActive }) =>
+          `${baseClasses} ${!isActive ? activeClasses : inactiveClasses}`
+        }
+      >
+        Audio Compression
+      </NavLink>
+      <NavLink
+        to="/compress-video"
+        className={({ isActive }) =>
+          `${baseClasses} ${!isActive ? activeClasses : inactiveClasses}`
+        }
+      >
+        Video Compression
+      </NavLink>
     </div>
   );
 }

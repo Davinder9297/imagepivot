@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { convertAudio } = require('../controller/audioController');
+const { convertAudio, compressAudio } = require('../controller/audioController');
 
 const router = express.Router();
 
@@ -20,5 +20,6 @@ const upload = multer({ storage });
 
 // POST route for audio conversion
 router.post('/convertaudio', upload.single('audio'), convertAudio);
+router.post("/compress-audio", upload.single("audio"), compressAudio);
 
 module.exports = router;

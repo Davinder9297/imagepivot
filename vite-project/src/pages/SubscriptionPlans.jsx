@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const SubscriptionPlans = () => {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+const navigate=useNavigate()
   useEffect(() => {
     let mounted = true;
     
@@ -70,38 +71,39 @@ const SubscriptionPlans = () => {
   }, []);
 
   const handleSubscribe = async (planId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to subscribe to a plan');
-        return;
-      }
+    navigate('/subscribe?planId='+planId)
+    // try {
+    //   const token = localStorage.getItem('token');
+    //   if (!token) {
+    //     alert('Please log in to subscribe to a plan');
+    //     return;
+    //   }
 
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      };
+    //   const config = {
+    //     headers: {
+    //       'Authorization': `Bearer ${token}`
+    //     }
+    //   };
 
-      const response = await axios.post('/api/subscriptions/subscribe', {
-        planId,
-        subscriptionType: 'monthly'
-      }, config);
+    //   const response = await axios.post('/api/subscriptions/subscribe', {
+    //     planId,
+    //     subscriptionType: 'monthly'
+    //   }, config);
       
-      if (response.data?.user?.currentPlan) {
-        setCurrentPlan(response.data.user.currentPlan);
-      }
+    //   if (response.data?.user?.currentPlan) {
+    //     setCurrentPlan(response.data.user.currentPlan);
+    //   }
       
-      // Redirect to checkout or show success message
-      window.location.href = `/checkout?plan=${planId}`;
-    } catch (err) {
-      console.error('Error subscribing to plan:', err);
-      if (err.response?.status === 401) {
-        alert('Your session has expired. Please log in again.');
-      } else {
-        alert('Failed to subscribe to plan. Please try again.');
-      }
-    }
+    //   // Redirect to checkout or show success message
+    //   window.location.href = `/checkout?plan=${planId}`;
+    // } catch (err) {
+    //   console.error('Error subscribing to plan:', err);
+    //   if (err.response?.status === 401) {
+    //     alert('Your session has expired. Please log in again.');
+    //   } else {
+    //     alert('Failed to subscribe to plan. Please try again.');
+    //   }
+    // }
   };
 
   const handleCancelSubscription = async () => {

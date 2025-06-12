@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { convertVideo } = require('../controller/videoController');
+const { convertVideo,compressVideo } = require('../controller/videoController');
 
 const router = express.Router();
 
@@ -19,5 +19,5 @@ const upload = multer({ storage });
 
 // POST /convert-video?format=mp4
 router.post('/convert-video', upload.single('video'), convertVideo);
-
+router.post("/compress-video", upload.single("video"), compressVideo);
 module.exports = router;

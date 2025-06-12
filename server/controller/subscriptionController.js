@@ -1,6 +1,9 @@
 const Plan = require('../models/Plan');
+const Subscription = require('../models/Subscription');
 const User = require('../models/User');
+const Stripe = require('stripe');
 
+const stripe = Stripe(process.env.STRIPE_API_KEY);
 // Create default plans if they don't exist
 const createDefaultPlans = async () => {
   try {
@@ -85,7 +88,16 @@ const createDefaultPlans = async () => {
 
 // Call the function to create default plans
 createDefaultPlans();
-
+exports.getPlanById = async (req, res) => {
+  try {
+    const plan = await Plan.findById(req.params.id);
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+    res.json(plan);
+  } catch (err) {
+    console.error('Error fetching plan:', err);
+    res.status(500).json({ error: 'Server error fetching plan' });
+  }
+};
 // Admin functions
 exports.createPlan = async (req, res) => {
   try {
@@ -271,4 +283,78 @@ exports.incrementUsage = async (req, res) => {
     console.error('Error incrementing usage:', err);
     res.status(500).json({ error: 'Failed to increment usage' });
   }
+};
+exports.createCheckoutSession = async (req, res) => {
+  const { planId, billingType } = req.body;
+
+  try {
+    const plan = await Plan.findById(planId);
+    const amount = billingType === 'monthly' ? plan.monthlyFee : plan.annualFee;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: `${plan.name} (${billingType})` },
+          unit_amount: amount * 100,
+        },
+        quantity: 1,
+      }],
+      metadata: {
+        planId,
+        billingType,
+        userId: req.user._id.toString() // assuming auth middleware
+      },
+      success_url: `${process.env.CLIENT_URL}/success`,
+      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Checkout session failed' });
+  }
+};
+
+exports.handleWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Webhook signature error:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const { userId, planId, billingType } = session.metadata;
+
+    const plan = await Plan.findById(planId);
+    const duration = billingType === 'monthly' ? 30 : 365;
+
+    await Subscription.create({
+      user: userId,
+      plan: planId,
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      currentPlan: planId,
+      subscriptionType: billingType,
+      subscriptionStartDate: new Date(),
+      subscriptionEndDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
+    });
+  }
+
+  res.json({ received: true });
 };

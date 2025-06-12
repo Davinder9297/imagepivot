@@ -26,6 +26,9 @@ import ConvertVideoPage from "./pages/ConvertVideo";
 import PreHome from "./pages/preHome";
 import ToolsFixed from "./components/ToolsFixed";
 import BorderWrapper from "./components/BorderWrapper";
+import SubscribePage from "./pages/SubscribePage";
+import CompressAudioPage from "./pages/CompressAudio";
+import VideoCompressionPage from "./pages/CompressVideo";
 
 function App() {
   return (
@@ -41,6 +44,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/signup" element={<Register />} />
               <Route path="/plans" element={<SubscriptionPlans />} />
+              <Route path="/subscribe" element={<SubscribePage />} />
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={
@@ -78,6 +82,8 @@ function App() {
               <Route path="/blur-face" element={<BorderWrapper><BlurFacePage /></BorderWrapper>} /> 
               <Route path="/upscale" element={<BorderWrapper><UpscalePage /></BorderWrapper>} />
               <Route path="/forgot-password" element={<BorderWrapper><ForgotPassword /></BorderWrapper>} />
+              <Route path="/compress-audio" element={<BorderWrapper><CompressAudioPage /></BorderWrapper>} />
+              <Route path="/compress-video" element={<BorderWrapper><VideoCompressionPage /></BorderWrapper>} />
             </Routes>
           </main>
         </div>

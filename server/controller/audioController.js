@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const ffmpeg = require("fluent-ffmpeg");
 
 const supportedAudioFormats = [
   'wav', 'aiff', 'pcm', 'mp3', 'aac', 'ogg', 'flac', 'alac', 'm4a', 'opus', 'amr'
@@ -79,7 +80,38 @@ cmd = `ffmpeg -y -i "${inputPath}" -ac 1 -c:a libopencore_amrnb -ar 8000 -ab 12.
     res.status(500).json({ error: 'Internal server error', details: err.toString() });
   }
 };
+const compressAudio = (req, res) => {
+  const file = req.file;
+  const { percentage } = req.body;
+
+  if (!file || !percentage) {
+    return res.status(400).json({ error: "Audio file and percentage are required." });
+  }
+
+  const inputPath = file.path;
+  const outputFileName = `${Date.now()}-compressed.mp3`;
+  const outputPath = path.join(__dirname, "..", "outputs", outputFileName);
+
+  const bitrate = Math.max(32, Math.min(320, Math.floor((percentage / 100) * 320))); // Clamp 32–320 kbps
+
+  ffmpeg(inputPath)
+    .audioBitrate(`${bitrate}k`)
+    .toFormat("mp3")
+    .on("end", () => {
+      res.download(outputPath, () => {
+        fs.unlinkSync(inputPath); // Clean up
+        fs.unlinkSync(outputPath);
+      });
+    })
+    .on("error", (err) => {
+      console.error("Compression error:", err.message);
+      fs.unlinkSync(inputPath);
+      res.status(500).json({ error: "Compression failed." });
+    })
+    .save(outputPath);
+};
 
 module.exports = {
   convertAudio,
+  compressAudio
 };

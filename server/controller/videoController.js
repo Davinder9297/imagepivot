@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
-
+const ffmpeg = require("fluent-ffmpeg");
 const supportedVideoFormats = [
   'mp4', 'mov', 'avi', 'mkv', 'flv', 'webm', 'wmv', 'mpeg', '3gp', 'ogg'
 ];
@@ -74,5 +74,42 @@ const convertVideo = (req, res) => {
     res.status(500).json({ error: 'Internal server error', details: err.toString() });
   }
 };
+const compressVideo = (req, res) => {
+  const file = req.file;
+  const { percentage } = req.body;
 
-module.exports = { convertVideo };
+  if (!file || !percentage) {
+    return res.status(400).json({ error: "Video file and compression percentage are required." });
+  }
+
+  const inputPath = file.path;
+  const outputFileName = `${Date.now()}-compressed.mp4`;
+  const outputPath = path.join(__dirname, "..", "outputs", outputFileName);
+
+  // Clamp the CRF value based on percentage
+  // CRF: 0 (best quality) → 51 (worst)
+  // Convert percentage (0–100) to CRF scale inversely
+  const crf = Math.round(51 - (percentage / 100) * 51);
+  const safeCRF = Math.max(18, Math.min(40, crf)); // Limit range to reasonable values
+
+  ffmpeg(inputPath)
+    .outputOptions([
+      `-vcodec libx264`,
+      `-crf ${safeCRF}`,
+      `-preset veryfast`
+    ])
+    .on("end", () => {
+      res.download(outputPath, () => {
+        fs.unlinkSync(inputPath);
+        fs.unlinkSync(outputPath);
+      });
+    })
+    .on("error", (err) => {
+      console.error("Compression error:", err.message);
+      fs.unlinkSync(inputPath);
+      res.status(500).json({ error: "Video compression failed." });
+    })
+    .save(outputPath);
+};
+
+module.exports = { convertVideo,compressVideo };
