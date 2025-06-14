@@ -318,43 +318,76 @@ exports.createCheckoutSession = async (req, res) => {
   }
 };
 
-exports.handleWebhook = async (req, res) => {
+exports.stripeWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = Stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Webhook signature error:', err.message);
+    console.error('❌ Webhook Error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+console.log("event",event);
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const { userId, planId, billingType } = session.metadata;
 
-    const plan = await Plan.findById(planId);
-    const duration = billingType === 'monthly' ? 30 : 365;
+    const {
+      userId,
+      planId,
+      billingType
+    } = session.metadata || {};
 
-    await Subscription.create({
-      user: userId,
-      plan: planId,
-      status: 'active',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
-    });
+    try {
+      const plan = await Plan.findById(planId);
+      if (!plan) {
+        console.error('⚠️ Plan not found');
+        return res.status(404).send('Plan not found');
+      }
 
-    await User.findByIdAndUpdate(userId, {
-      currentPlan: planId,
-      subscriptionType: billingType,
-      subscriptionStartDate: new Date(),
-      subscriptionEndDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
-    });
+      const durationInMs = billingType === 'annual'
+        ? 365 * 24 * 60 * 60 * 1000
+        : 30 * 24 * 60 * 60 * 1000;
+
+      const startDate = new Date();
+      const endDate = new Date(startDate.getTime() + durationInMs);
+
+      const subscription = new Subscription({
+        user: userId,
+        plan: planId,
+        billingType,
+        amountPaid: session.amount_total / 100, // Stripe uses cents
+        currency: session.currency,
+        chargeId: session.payment_intent,
+        paymentStatus: session.payment_status,
+        paymentMethod: session.payment_method_types?.[0] || 'unknown',
+        startDate,
+        endDate
+      });
+
+      await subscription.save();
+
+      // Update user document
+      await User.findByIdAndUpdate(userId, {
+        currentPlan: planId,
+        subscriptionType: billingType,
+        subscriptionStartDate: startDate,
+        subscriptionEndDate: endDate
+      });
+
+      console.log('✅ Subscription and user updated successfully');
+      return res.status(200).json({ received: true });
+    } catch (err) {
+      console.error('❌ Error saving subscription:', err);
+      return res.status(500).json({ error: 'Server error during webhook processing' });
+    }
   }
 
-  res.json({ received: true });
+  res.status(200).json({ received: true });
 };
