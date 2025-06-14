@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth } = require('../middleware/auth');
 const User = require('../models/User');
 const Plan = require('../models/Plan');
-
+const moment = require('moment');
 // Get user statistics
 router.get('/stats', auth, async (req, res) => {
   try {
@@ -36,18 +36,23 @@ router.get('/stats', auth, async (req, res) => {
 router.post('/track', auth, async (req, res) => {
   try {
     const { service, imageCount = 1 } = req.body;
-    
-    // Get the user from the auth middleware
     const user = req.user;
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Check if subscription is expired
+if (
+  user.subscriptionEndDate &&
+  new Date(user.subscriptionEndDate).getTime() < Date.now()
+) {
+  return res.status(403).json({ error: 'Your subscription plan has expired.' });
+}
+
     // Ensure plan is populated
     let plan = user.currentPlan;
     if (!plan) {
-      // Create Basic plan if it doesn't exist
       plan = await Plan.findOne({ name: 'Basic' });
       if (!plan) {
         plan = await Plan.create({
@@ -55,58 +60,40 @@ router.post('/track', auth, async (req, res) => {
           monthlyFee: 0,
           annualFee: 0,
           services: [
-            {
-              name: 'convert-to-jpg',
-              monthlyQuota: 100,
-              annualQuota: 1000
-            },
-            {
-              name: 'convert-from-jpg',
-              monthlyQuota: 100,
-              annualQuota: 1000
-            },
-            {
-              name: 'modify-rotate',
-              monthlyQuota: 50,
-              annualQuota: 500
-            },
-            {
-              name: 'optimize-upscale',
-              monthlyQuota: 50,
-              annualQuota: 500
-            },
-          {
-              name: 'convert-audio',
-              monthlyQuota: 50,
-              annualQuota: 500
-            },
-                      {
-              name: 'convert-video',
-              monthlyQuota: 50,
-              annualQuota: 500
-            },
-          ]
+  { name: 'optimize-compress', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'optimize-upscale', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'optimize-remove-background', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'create-meme', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'modify-resize', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'modify-crop', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'modify-rotate', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'convert-to-jpg', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'convert-from-jpg', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'convert-html-to-image', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'security-watermark', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'security-blur-face', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'convert-audio', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'convert-video', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'compress-video', monthlyQuota: 3, annualQuota: 36 },
+  { name: 'compress-audio', monthlyQuota: 3, annualQuota: 36 },
+]
         });
       }
     }
 
-    // Find the service in the plan
     const serviceConfig = plan.services?.find(s => s.name === service);
     if (!serviceConfig) {
       console.error(`Service ${service} not found in plan:`, plan);
       return res.status(400).json({ error: 'Service not available in current plan' });
     }
 
-    // Get the quota based on subscription type
     const quota = user.subscriptionType === 'annual' ? serviceConfig.annualQuota : serviceConfig.monthlyQuota;
-    
-    // Check if user has enough quota for this specific service
     const serviceUsage = user.usage?.find(u => u.service === service)?.count || 0;
+
     if (serviceUsage + imageCount > quota) {
       return res.status(403).json({ error: 'Image quota exceeded for this service' });
     }
 
-    // Update user using findByIdAndUpdate to preserve all fields
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
@@ -128,11 +115,12 @@ router.post('/track', auth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       imagesProcessed: updatedUser.imagesProcessed,
-      remainingImages: quota - updatedUser.imagesProcessed
+      remainingImages: quota - (serviceUsage + imageCount)
     });
+
   } catch (error) {
     console.error('Error tracking usage:', error);
     res.status(500).json({ error: 'Failed to track usage' });

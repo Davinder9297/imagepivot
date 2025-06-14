@@ -38,7 +38,9 @@ const planSchema = new mongoose.Schema({
         'security-watermark',
         'security-blur-face',
         'convert-audio',
-        'convert-video'
+        'convert-video',
+        'compress-video',
+        'compress-audio',
       ]
     },
     monthlyQuota: {

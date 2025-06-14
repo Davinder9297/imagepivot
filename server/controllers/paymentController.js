@@ -9,16 +9,16 @@ const getSubscriptionStatus = asyncHandler(async (req, res) => {
     const user = req.user;
     
     // If no subscription exists, return null
-    if (!user.subscription) {
+    if (!user.currentPlan) {
         return res.json({ subscription: null });
     }
 
     // Get the current plan details
-    const plan = await Plan.findOne({ name: user.subscription.plan });
+    const plan = await Plan.findById(user.currentPlan);
     
     res.json({
         subscription: {
-            ...user.subscription,
+            userDetails:user,
             planDetails: plan
         }
     });

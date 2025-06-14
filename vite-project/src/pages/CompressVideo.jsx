@@ -29,16 +29,33 @@ const VideoCompressionPage = () => {
     setLoading(true);
     setError("");
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please login to use this feature");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("video", video);
     formData.append("percentage", compression);
 
     try {
+          const trackRes = await axios.post("/api/user/track", {
+        service: 'convert-video',
+        imageCount: 1
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const res = await axios.post("/api/video/compress-video", formData, {
         responseType: "blob",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+         headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       const url = URL.createObjectURL(new Blob([res.data]));

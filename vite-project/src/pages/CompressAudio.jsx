@@ -30,19 +30,47 @@ const CompressAudioPage = () => {
       return;
     }
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please login to use this feature");
+      setLoading(false);
+      return;
+    }
+
+
     try {
       const formData = new FormData();
       formData.append("audio", audio);
       formData.append("percentage", percentage);
+          const trackRes = await axios.post("/api/user/track", {
+        service: 'convert-video',
+        imageCount: 1
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       const res = await axios.post("/api/audio/compress-audio", formData, {
         responseType: "blob",
+         headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const url = URL.createObjectURL(new Blob([res.data]));
       setConvertedUrl(url);
     } catch (err) {
-      setError("Compression failed. Try again.");
+      console.error("Conversion failed:", err);
+      if (err.response?.status === 401) {
+        setError("Please login to use this feature");
+      } else if (err.response?.status === 403) {
+        setError("You have reached your video processing limit. Please upgrade your plan.");
+      } else {
+        setError("Failed to convert video. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

@@ -29,6 +29,8 @@ import BorderWrapper from "./components/BorderWrapper";
 import SubscribePage from "./pages/SubscribePage";
 import CompressAudioPage from "./pages/CompressAudio";
 import VideoCompressionPage from "./pages/CompressVideo";
+import PaymentSuccessPage from "./pages/PaymentSuccess";
+import PaymentFailedPage from "./pages/PaymentFailed";
 
 function App() {
   return (
@@ -45,6 +47,8 @@ function App() {
               <Route path="/signup" element={<Register />} />
               <Route path="/plans" element={<SubscriptionPlans />} />
               <Route path="/subscribe" element={<SubscribePage />} />
+              <Route path="/success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
+              <Route path="/cancel" element={<ProtectedRoute><PaymentFailedPage /></ProtectedRoute>} />
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={
