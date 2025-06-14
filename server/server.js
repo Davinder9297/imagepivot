@@ -8,7 +8,7 @@ const connectDB = require("./config/db");
 connectDB();
 
 const app = express();
-
+app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 const imageRoutes = require("./routes/imageRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const authRoutes = require("./routes/authRoutes");
