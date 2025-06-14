@@ -47,8 +47,8 @@ function App() {
               <Route path="/signup" element={<Register />} />
               <Route path="/plans" element={<SubscriptionPlans />} />
               <Route path="/subscribe" element={<SubscribePage />} />
-              <Route path="/success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
-              <Route path="/cancel" element={<ProtectedRoute><PaymentFailedPage /></ProtectedRoute>} />
+              <Route path="/success" element={<PaymentSuccessPage />} />
+              <Route path="/cancel" element={<PaymentFailedPage />}/>
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={
