@@ -35,7 +35,6 @@ const subscriptionSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['succeeded', 'pending', 'failed'],
     required: true
   },
   paymentMethod: {
