@@ -61,8 +61,14 @@ const VideoCompressionPage = () => {
       const url = URL.createObjectURL(new Blob([res.data]));
       setConvertedUrl(url);
     } catch (err) {
-      console.error(err);
-      setError("Video compression failed. Try again.");
+      console.error("Compression failed:", err);
+      if (err.response?.status === 401) {
+        setError("Please login to use this feature");
+      } else if (err.response?.status === 403) {
+        setError("You have reached your video processing limit. Please upgrade your plan.");
+      } else {
+        setError("Failed to compress video. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

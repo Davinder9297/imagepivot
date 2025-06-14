@@ -63,13 +63,13 @@ const CompressAudioPage = () => {
       const url = URL.createObjectURL(new Blob([res.data]));
       setConvertedUrl(url);
     } catch (err) {
-      console.error("Conversion failed:", err);
+      console.error("Compression failed:", err);
       if (err.response?.status === 401) {
         setError("Please login to use this feature");
       } else if (err.response?.status === 403) {
-        setError("You have reached your video processing limit. Please upgrade your plan.");
+        setError("You have reached your audio processing limit. Please upgrade your plan.");
       } else {
-        setError("Failed to convert video. Please try again.");
+        setError("Failed to compress audio. Please try again.");
       }
     } finally {
       setLoading(false);
