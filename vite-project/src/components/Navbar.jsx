@@ -65,7 +65,7 @@ const Navbar = () => {
                     to="/admin/plans"
                     className={`${isActive('/admin/plans')} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200`}
                   >
-                    Plans
+                    Plans Management
                   </Link>
                 </>
               ) : (
@@ -163,6 +163,12 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                    <Link
+                      to="/plans"
+                      className={`${isActive('/plans')} px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-teal-400`}
+                    >
+                      Plans
+                        </Link>
                 <Link
                   to="/login"
                   className={`${isActive('/login')} px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
@@ -270,6 +276,12 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="space-y-1">
+                   <Link
+                      to="/plans"
+                      className={`${isActive('/plans')} px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-teal-400`}
+                    >
+                      Plans
+                        </Link>
               <Link
                 to="/login"
                 className={`${isActive('/login')} block pl-3 pr-4 py-2 text-base font-medium transition-colors duration-200`}

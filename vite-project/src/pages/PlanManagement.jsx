@@ -2,18 +2,22 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AVAILABLE_SERVICES = [
-  'optimize-compress',
-  'optimize-upscale',
-  'optimize-remove-background',
-  'create-meme',
-  'modify-resize',
-  'modify-crop',
-  'modify-rotate',
-  'convert-to-jpg',
-  'convert-from-jpg',
-  'convert-html-to-image',
-  'security-watermark',
-  'security-blur-face'
+ 'optimize-compress',
+        'optimize-upscale',
+        'optimize-remove-background',
+        'create-meme',
+        'modify-resize',
+        'modify-crop',
+        'modify-rotate',
+        'convert-to-jpg',
+        'convert-from-jpg',
+        'convert-html-to-image',
+        'security-watermark',
+        'security-blur-face',
+        'convert-audio',
+        'convert-video',
+        'compress-video',
+        'compress-audio',
 ];
 
 const PlanManagement = () => {

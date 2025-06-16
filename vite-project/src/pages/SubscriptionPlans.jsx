@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+
 const PlanStatus = ({ currentPlan, userDetails }) => {
   if (!currentPlan || !userDetails?.subscriptionEndDate) return null;
 
   const isExpired = moment(userDetails.subscriptionEndDate).isBefore(moment());
   const expiryText = isExpired ? 'expired on' : 'will expire on';
-  const colorClass = isExpired ? 'text-red-600' : 'text-indigo-600';
+  const colorClass = isExpired ? 'text-red-600' : 'text-green-400';
 
   return (
     <div className={`font-semibold text-lg ${colorClass}`}>
@@ -21,75 +22,75 @@ const SubscriptionPlans = () => {
   const [currentPlan, setCurrentPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userDetails, setuserDetails] = useState([])
-const navigate=useNavigate()
-  useEffect(() => {
-    let mounted = true;
-    
-    const fetchPlans = async () => {
-      try {
-        setError(null);
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          setError('Please log in to view subscription details');
-          setLoading(false);
-          return;
-        }
+  const [userDetails, setUserDetails] = useState(null);
+  const navigate = useNavigate();
 
-        // Set auth header
+ useEffect(() => {
+  let mounted = true;
+
+  const fetchPlans = async () => {
+    try {
+      setError(null);
+      const token = localStorage.getItem('token');
+
+      const { data: plansData } = await axios.get('/api/subscriptions/plans');
+      if (!mounted) return;
+      setPlans(plansData);
+
+      // If user is logged in, fetch subscription status
+      if (token) {
         const config = {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         };
 
-        // Fetch plans first
-        const { data: plansData } = await axios.get('/api/subscriptions/plans', config);
-        if (!mounted) return;
-        setPlans(plansData);
-
-        // Then fetch subscription status
         try {
           const { data: subscriptionData } = await axios.get('/api/payments/subscription-status', config);
           if (!mounted) return;
           setCurrentPlan(subscriptionData.subscription?.planDetails);
-          setuserDetails(subscriptionData.subscription?.userDetails)
+          setUserDetails(subscriptionData.subscription?.userDetails);
         } catch (subErr) {
           console.error('Error fetching subscription:', subErr);
+          // Optional: You can show a different message or skip this entirely
           if (subErr.response?.status === 401) {
             setError('Your session has expired. Please log in again.');
           }
         }
-      } catch (err) {
-        console.error('Error fetching plans:', err);
-        if (!mounted) return;
-        if (err.response?.status === 404) {
-          setError('The subscription service is currently unavailable. Please try again later.');
-        } else if (err.response?.status === 401) {
-          setError('Please log in to view subscription details');
-        } else {
-          setError('Failed to load subscription plans. Please try again later.');
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
       }
-    };
 
-    fetchPlans();
+    } catch (err) {
+      console.error('Error fetching plans:', err);
+      if (!mounted) return;
+      if (err.response?.status === 404) {
+        setError('The subscription service is currently unavailable. Please try again later.');
+      } else {
+        setError('Failed to load subscription plans. Please try again later.');
+      }
+    } finally {
+      if (mounted) {
+        setLoading(false);
+      }
+    }
+  };
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  fetchPlans();
+  return () => {
+    mounted = false;
+  };
+}, []);
 
-  const handleSubscribe = async (planId) => {
-    navigate('/subscribe?planId='+planId)
+
+const handleSubscribe = (planId) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    // Not logged in, redirect to login
+    navigate('/login');
+  } else {
+    // Logged in, proceed to subscription
+    navigate('/subscribe?planId=' + planId);
   }
-
+};
 
   if (loading) {
     return (
@@ -126,13 +127,15 @@ const navigate=useNavigate()
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto ">
-    {currentPlan && <PlanStatus currentPlan={currentPlan} userDetails={userDetails}/>}
-      <h1 className="text-2xl font-bold mb-8">Available Plans</h1>
-      
+      {currentPlan && <PlanStatus currentPlan={currentPlan} userDetails={userDetails} />}
+
+      {/* <h1 className="text-2xl font-bold mb-8">Available Plans</h1> */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan) => (
-        plan?.name!=='admin' &&  <div key={plan._id} className="bg-indigo-900 text-teal-600 p-8 rounded-lg shadow-md relative min-h-[600px] flex flex-col">
-            {currentPlan === plan.name && (
+          plan?.name !== 'admin' &&
+          <div key={plan._id} className="bg-indigo-900 text-green-400 p-8 rounded-lg shadow-md relative min-h-[600px] flex flex-col">
+            {currentPlan?._id === plan._id && (
               <div className="absolute -top-3 -right-3 bg-indigo-500 text-white px-3 py-1 rounded-full text-sm">
                 Current Plan
               </div>
@@ -142,29 +145,27 @@ const navigate=useNavigate()
               <p className="text-white mb-6">
                 {plan.monthlyFee === 0 ? "Free" : `$${plan.monthlyFee}/month`}
               </p>
-              
+
               {plan.services.map((service, index) => (
                 <div key={index} className="flex items-start mb-3">
-                  <svg className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-green-400 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  <span className="text-gray-300">
+                  <span className="text-white">
                     {service.name} ({service.monthlyQuota === -1 ? "Unlimited" : `${service.monthlyQuota}/month`})
                   </span>
                 </div>
               ))}
             </div>
 
-            {currentPlan !== plan.name && (
               <div className="mt-auto pt-6">
                 <button
                   onClick={() => handleSubscribe(plan._id)}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 transition-colors text-base font-medium"
+                  className="w-full bg-teal-400 text-indigo-900 py-3 rounded-md hover:bg-teal-500 transition-colors text-base font-medium"
                 >
                   {plan.monthlyFee === 0 ? "Start Free" : "Select Plan"}
                 </button>
               </div>
-            )}
           </div>
         ))}
       </div>
@@ -172,4 +173,4 @@ const navigate=useNavigate()
   );
 };
 
-export default SubscriptionPlans; 
+export default SubscriptionPlans;
